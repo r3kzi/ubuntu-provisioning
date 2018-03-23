@@ -12,4 +12,4 @@
     - gnome-sudoku
     - aisleriot
     - totem
-  sudo: yes
+  become: true

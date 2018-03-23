@@ -3,48 +3,62 @@
   apt:
     name: fish
     update_cache: yes
-  sudo: yes
+  become: true
 
-- name: create ~/.oh-my-fish
+- name: install fish shell - create ~/.oh-my-fish
   file:
     path: "/home/{{ username }}/.oh-my-fish"
     state: directory
     force: yes
 
-- name: look up fish version
-  shell: dpkg -l | grep fish | awk '{print $3}'
+- name: install fish shell - look up fish version
+  shell: dpkg --compare-versions $(fish --version | head -n1 | cut -d' ' -f3) "gt" "2.2.0"
   register: fish_version
-  ignore_errors: true
 
-- name: print fish version
-  debug:
-    msg: "fish Version: {{ fish_version.stdout }}. Needs to be >= 2.2.0 for omf"
+- set_fact:
+    fish_version_compare_rc: "{{ fish_version.rc }}"
 
-- name: create ~/.config/omf
-  when: fish_version>= '2.2'
-  file:
-    path: "/home/{{ username }}/.config/omf"
-    state: directory
-    force: yes
+- block:
+  - name: install fish shell - create ~/.config/omf
+    file:
+      path: "/home/{{ username }}/.config/omf"
+      state: directory
+      force: yes
 
-- name: download oh-my-fish
-  when: fish_version>= '2.2'
-  get_url:
-    url: https://get.oh-my.fish
-    dest: /home/{{ username }}/.oh-my-fish/install
-    validate_certs: no
-    mode: 0440
+  - name: install fish shell - download oh-my-fish
+    get_url:
+      url: https://get.oh-my.fish
+      dest: /home/{{ username }}/.oh-my-fish/install
+      validate_certs: no
+      mode: 0440
 
-- name: install oh-my-fish
-  when: fish_version>= '2.2'
-  shell: fish /home/{{ username }}/.oh-my-fish/install --path=~/.local/share/omf --config=~/.config/omf
+  - name: install fish shell - install oh-my-fish
+    shell: fish /home/{{ username }}/.oh-my-fish/install --yes --noninteractive --path=~/.local/share/omf --config=~/.config/omf
+    ignore_errors: true
 
-- name: install bob-the-fish
-  when: fish_version>= '2.2'
-  shell: omf install bobthefish
+  - name: install fish shell - install bob-the-fish
+    shell: fish -c omf install bobthefish
 
-- name: Set fish as the default shell 1
+  - name: install fish shell - download powerline-patched font part 1
+    get_url:
+        url: https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf
+        dest: /home/{{ username }}/.fonts/
+        validate_certs: no
+        mode: 0440
+
+  - name: install fish shell - download powerline-patched font part 2
+    get_url:
+      url: https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf
+      dest: /home/{{ username }}/.config/fontconfig/conf.d/
+      validate_certs: no
+      mode: 0440
+
+  - name: install fish shell - update font cache
+    shell: fc-cache -vf ~/.fonts/
+  when: fish_version_compare_rc == '0'
+
+- name: install fish shell - set fish as the default shell 1
   user:
     name: "{{ username }}"
     shell: /usr/bin/fish
-  sudo: yes
+  become: true
