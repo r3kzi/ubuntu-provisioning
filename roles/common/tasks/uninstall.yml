@@ -1,0 +1,15 @@
+---
+- name: uninstall unnecessary software
+  apt: name="{{ item }}" purge=yes force=yes state=absent
+  with_items:
+    - thunderbird
+    - rhythmbox
+    - libreoffice-draw
+    - libreoffice-impress
+    - libreoffice-math
+    - gnome-mahjongg
+    - gnomine
+    - gnome-sudoku
+    - aisleriot
+    - totem
+  sudo: yes

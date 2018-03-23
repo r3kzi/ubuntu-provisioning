@@ -1,0 +1,50 @@
+---
+- name: install fish shell
+  apt:
+    name: fish
+    update_cache: yes
+  sudo: yes
+
+- name: create ~/.oh-my-fish
+  file:
+    path: "/home/{{ username }}/.oh-my-fish"
+    state: directory
+    force: yes
+
+- name: look up fish version
+  shell: dpkg -l | grep fish | awk '{print $3}'
+  register: fish_version
+  ignore_errors: true
+
+- name: print fish version
+  debug:
+    msg: "fish Version: {{ fish_version.stdout }}. Needs to be >= 2.2.0 for omf"
+
+- name: create ~/.config/omf
+  when: fish_version>= '2.2'
+  file:
+    path: "/home/{{ username }}/.config/omf"
+    state: directory
+    force: yes
+
+- name: download oh-my-fish
+  when: fish_version>= '2.2'
+  get_url:
+    url: https://get.oh-my.fish
+    dest: /home/{{ username }}/.oh-my-fish/install
+    validate_certs: no
+    mode: 0440
+
+- name: install oh-my-fish
+  when: fish_version>= '2.2'
+  shell: fish /home/{{ username }}/.oh-my-fish/install --path=~/.local/share/omf --config=~/.config/omf
+
+- name: install bob-the-fish
+  when: fish_version>= '2.2'
+  shell: omf install bobthefish
+
+- name: Set fish as the default shell 1
+  user:
+    name: "{{ username }}"
+    shell: /usr/bin/fish
+  sudo: yes
