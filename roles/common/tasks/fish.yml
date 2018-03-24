@@ -5,12 +5,7 @@
     update_cache: yes
   become: true
 
-- name: install fish shell - create ~/.oh-my-fish
-  file:
-    path: "/home/{{ username }}/.oh-my-fish"
-    state: directory
-    force: yes
-
+# install oh my fish only when 'fish --version' is greater than 2.2.0
 - name: install fish shell - look up fish version
   shell: dpkg --compare-versions $(fish --version | head -n1 | cut -d' ' -f3) "gt" "2.2.0"
   register: fish_version
@@ -19,9 +14,27 @@
     fish_version_compare_rc: "{{ fish_version.rc }}"
 
 - block:
+  - name: install fish shell - create ~/.oh-my-fish
+    file:
+      path: "/home/{{ username }}/.oh-my-fish"
+      state: directory
+      force: yes
+
   - name: install fish shell - create ~/.config/omf
     file:
       path: "/home/{{ username }}/.config/omf"
+      state: directory
+      force: yes
+
+  - name: install fish shell - create ~/.fonts/
+    file:
+      path: "/home/{{ username }}/.fonts/"
+      state: directory
+      force: yes
+
+  - name: install fish shell - create ~/.config/fontconfig/conf.d/
+    file:
+      path: "/home/{{ username }}/.config/fontconfig/conf.d/"
       state: directory
       force: yes
 
@@ -30,34 +43,39 @@
       url: https://get.oh-my.fish
       dest: /home/{{ username }}/.oh-my-fish/install
       validate_certs: no
-      mode: 0440
+      mode: 0660
 
   - name: install fish shell - install oh-my-fish
     shell: fish /home/{{ username }}/.oh-my-fish/install --yes --noninteractive --path=~/.local/share/omf --config=~/.config/omf
-    ignore_errors: true
 
   - name: install fish shell - install bob-the-fish
-    shell: fish -c omf install bobthefish
+    shell: fish -c 'omf install bobthefish'
 
   - name: install fish shell - download powerline-patched font part 1
     get_url:
         url: https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf
         dest: /home/{{ username }}/.fonts/
         validate_certs: no
-        mode: 0440
+        mode: 0660
+
+  - name: install fish shell - install fontconfig
+    apt:
+      name: fontconfig
+      update_cache: yes
+    become: true
+
+  - name: install fish shell - update font cache
+    shell: fc-cache -vf /home/{{ username }}/.fonts/
 
   - name: install fish shell - download powerline-patched font part 2
     get_url:
       url: https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf
       dest: /home/{{ username }}/.config/fontconfig/conf.d/
       validate_certs: no
-      mode: 0440
-
-  - name: install fish shell - update font cache
-    shell: fc-cache -vf ~/.fonts/
+      mode: 0660
   when: fish_version_compare_rc == '0'
 
-- name: install fish shell - set fish as the default shell 1
+- name: install fish shell - set fish as the default shell
   user:
     name: "{{ username }}"
     shell: /usr/bin/fish
