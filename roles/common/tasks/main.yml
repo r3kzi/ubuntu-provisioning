@@ -1,3 +1,4 @@
 ---
   - include: uninstall.yml
-  - include: fish.yml
+  #- include: fish.yml
+  - include: docker.yml
