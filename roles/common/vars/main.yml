@@ -1,2 +1,4 @@
 ---
 username: vagrant
+
+hashicorp_gpg_key_id: 51852D87348FFC4C

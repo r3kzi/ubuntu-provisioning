@@ -1,0 +1,18 @@
+---
+# using async/poll because of the long running apt install virtualbox task
+- name: install virtualbox - async
+  become: true
+  apt:
+    name: virtualbox
+    state: present
+  async: 1000
+  poll: 0
+  register: virtualbox_sleeper
+
+- name: install virtualbox - poll
+  become: true
+  async_status:
+    jid : "{{ virtualbox_sleeper.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 50

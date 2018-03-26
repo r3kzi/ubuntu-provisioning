@@ -1,0 +1,21 @@
+---
+- name: install java - setup environment
+  become: true
+  apt: name={{item}} state=installed
+  with_items:
+    - 'software-properties-common'
+
+- name: install java - add stable repository
+  become: true
+  apt_repository:
+    repo: "ppa:webupd8team/java"
+    state: present
+
+- name: install java - accept oracle java license
+  become: yes
+  debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+- name: install java - install oracle installer
+  become: true
+  apt:
+    name: oracle-java9-installer

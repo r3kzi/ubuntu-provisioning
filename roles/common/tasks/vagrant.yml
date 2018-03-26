@@ -1,0 +1,69 @@
+---
+- name: install vagrant - create /tmp/vagrant
+  file:
+    path: "/home/{{ username }}/vagrant-install/"
+    state: directory
+    force: yes
+
+- name: install vagrant - add hashicorp gpg key
+  become: true
+  shell: "gpg --keyserver hkp://keys.gnupg.net --recv-keys {{ hashicorp_gpg_key_id }}"
+
+- name: install vagrant - export key
+  become: true
+  shell: "gpg -a --export {{ hashicorp_gpg_key_id }}"
+  register: hashicorp_gpg
+
+- name: install vagrant - create gpg key file
+  become: true
+  copy:
+     content: "{{hashicorp_gpg.stdout}}"
+     dest: "/home/{{ username }}/vagrant-install/hashicorp_gpg.asc"
+
+- name: install vagrant - download hashicorps sha256 file
+  become: true
+  get_url:
+    url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_SHA256SUMS"
+    dest: "/home/{{ username }}/vagrant-install/hashicorp_sha256sum"
+    mode: 0440
+
+- name: install vagrant - download hashicorps sha256 sig file
+  become: true
+  get_url:
+    url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_SHA256SUMS.sig"
+    dest: "/home/{{ username }}/vagrant-install/hashicorp_sha256sum.sig"
+    mode: 0440
+
+- name: install vagrant - check sha256 integrity
+  become: true
+  shell: "gpg --verify /home/{{ username }}/vagrant-install/hashicorp_sha256sum.sig /home/{{ username }}/vagrant-install/hashicorp_sha256sum"
+
+- name: install vagrant - extract .deb sha256 checksum
+  become: true
+  shell: "cat /home/{{ username }}/vagrant-install/hashicorp_sha256sum | grep -e 'vagrant_2.0.3_x86_64.deb' | cut -d' ' -f1"
+  register: deb_sha256_checksum
+
+- name: install vagrant - set sha256 checksum fact
+  set_fact:
+    sha256_value: "{{ deb_sha256_checksum.stdout }}"
+
+- name: install vagrant - download vagrant .deb package
+  get_url:
+    url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_x86_64.deb"
+    dest: "/home/{{ username }}/vagrant-install/vagrant.deb"
+    checksum: "sha256:{{ sha256_value }}"
+    mode: 0660
+
+- name: install vagrant - install from .deb package
+  become: true
+  apt:
+    deb: "/home/{{ username }}/vagrant-install/vagrant.deb"
+
+- name: install vagrant - change ownership for ~/.vagrant.d folder
+  become: true
+  file:
+    path: "/home{{ username }}/.vagrant.d"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    state: directory
+    recurse: yes

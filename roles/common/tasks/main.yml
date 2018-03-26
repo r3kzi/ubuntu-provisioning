@@ -1,4 +1,9 @@
 ---
   - include: uninstall.yml
+
   #- include: fish.yml
-  - include: docker.yml
+  #- include: docker.yml
+  #- include: java.yml
+
+  #- include: virtualbox.yml
+  #- include: vagrant.yml
