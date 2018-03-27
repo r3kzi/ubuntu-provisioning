@@ -1,0 +1,23 @@
+---
+- name: install spotify-client - set fact spotify key id
+  set_fact:
+    spotify_key_id: "0DF731E45CE24F27EEEB1450EFDC8610341D9410"
+    spotify_deb_repo: "deb http://repository.spotify.com stable non-free"
+
+- name: install spotify-client - add apt key
+  become: true
+  apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: "{{ spotify_key_id }}"
+
+- name: install spotify-client - add repository
+  become: true
+  apt_repository:
+    repo: "{{ spotify_deb_repo }}"
+    state: present
+
+- name: install spotify-client - install
+  become: true
+  apt:
+    name: spotify-client
+    update_cache: yes

@@ -1,0 +1,20 @@
+---
+- name: install git-core - remove old version
+  become: true
+  apt:
+    name: git
+    purge: yes
+    state: absent
+
+- name: install git-core - add repository
+  become: true
+  apt_repository:
+    repo: "ppa:git-core/ppa"
+    state: present
+    update_cache: yes
+
+- name: install git-core - install
+  become: true
+  apt:
+    name: git
+    update_cache: yes

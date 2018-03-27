@@ -1,0 +1,13 @@
+---
+- name: install apitude
+  become: true
+  apt:
+    name: aptitude
+
+- name: update and upgrade all the stuff
+  become: true
+  apt:
+    update_cache: yes
+    upgrade: yes
+    autoremove: yes
+    cache_valid_time: 86400 #One day

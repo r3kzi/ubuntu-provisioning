@@ -1,0 +1,24 @@
+---
+- name: install google-chrome-stable - set facts for task
+  set_fact:
+    google_apt_key_url: "https://dl.google.com/linux/linux_signing_key.pub"
+    google_deb_repo: "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main"
+
+- name: install google-chrome-stable - add apt key
+  become: true
+  apt_key:
+    url: "{{ google_apt_key_url }}"
+    state: present
+
+- name: install google-chrome-stable - add stable repository
+  become: true
+  apt_repository:
+    repo: "{{ google_deb_repo }}"
+    state: present
+
+- name: install google-chrome-stable - install
+  become: true
+  apt:
+    name: google-chrome-stable
+    update_cache: yes
+

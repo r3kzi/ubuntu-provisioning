@@ -5,4 +5,4 @@
   vars:
     contents: "{{ lookup('file', 'roles/common/vars/main.yml') }}"
   roles:
-    - common
+    - { role: roles/common }

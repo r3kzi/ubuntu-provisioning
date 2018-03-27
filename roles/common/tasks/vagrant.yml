@@ -1,7 +1,12 @@
 ---
+- name: install vagrant - set facts for tasks
+  set_fact:
+    vagrant_install_dir: "/home/{{ username }}/vagrant-install"
+    hashicorp_gpg_key_id: "51852D87348FFC4C"
+
 - name: install vagrant - create /tmp/vagrant
   file:
-    path: "/home/{{ username }}/vagrant-install/"
+    path: "{{ vagrant_install_dir }}"
     state: directory
     force: yes
 
@@ -18,29 +23,29 @@
   become: true
   copy:
      content: "{{hashicorp_gpg.stdout}}"
-     dest: "/home/{{ username }}/vagrant-install/hashicorp_gpg.asc"
+     dest: "{{ vagrant_install_dir }}/hashicorp_gpg.asc"
 
 - name: install vagrant - download hashicorps sha256 file
   become: true
   get_url:
     url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_SHA256SUMS"
-    dest: "/home/{{ username }}/vagrant-install/hashicorp_sha256sum"
+    dest: "{{ vagrant_install_dir }}/hashicorp_sha256sum"
     mode: 0440
 
 - name: install vagrant - download hashicorps sha256 sig file
   become: true
   get_url:
     url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_SHA256SUMS.sig"
-    dest: "/home/{{ username }}/vagrant-install/hashicorp_sha256sum.sig"
+    dest: "{{ vagrant_install_dir }}/hashicorp_sha256sum.sig"
     mode: 0440
 
 - name: install vagrant - check sha256 integrity
   become: true
-  shell: "gpg --verify /home/{{ username }}/vagrant-install/hashicorp_sha256sum.sig /home/{{ username }}/vagrant-install/hashicorp_sha256sum"
+  shell: "gpg --verify {{ vagrant_install_dir }}/hashicorp_sha256sum.sig {{ vagrant_install_dir }}/hashicorp_sha256sum"
 
 - name: install vagrant - extract .deb sha256 checksum
   become: true
-  shell: "cat /home/{{ username }}/vagrant-install/hashicorp_sha256sum | grep -e 'vagrant_2.0.3_x86_64.deb' | cut -d' ' -f1"
+  shell: "cat {{ vagrant_install_dir }}/hashicorp_sha256sum | grep -e 'vagrant_2.0.3_x86_64.deb' | cut -d' ' -f1"
   register: deb_sha256_checksum
 
 - name: install vagrant - set sha256 checksum fact
@@ -50,14 +55,14 @@
 - name: install vagrant - download vagrant .deb package
   get_url:
     url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_x86_64.deb"
-    dest: "/home/{{ username }}/vagrant-install/vagrant.deb"
+    dest: "{{ vagrant_install_dir }}/vagrant.deb"
     checksum: "sha256:{{ sha256_value }}"
     mode: 0660
 
 - name: install vagrant - install from .deb package
   become: true
   apt:
-    deb: "/home/{{ username }}/vagrant-install/vagrant.deb"
+    deb: "{{ vagrant_install_dir }}/vagrant.deb"
 
 - name: install vagrant - change ownership for ~/.vagrant.d folder
   become: true

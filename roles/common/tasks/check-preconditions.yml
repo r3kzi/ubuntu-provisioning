@@ -1,0 +1,9 @@
+---
+# We require Ansible 2.3.1 or newer because we are using the block keyword
+# that was introduced in 2.3, see documentation
+# http://docs.ansible.com/ansible/latest/user_guide/playbooks_blocks.html
+- name: check Ansible version
+  assert:
+    that: "(ansible_version.major, ansible_version.minor, ansible_version.revision) >= (2, 3, 1)"
+    msg: "Please install the recommended version 2.3.1+. You have Ansible {{ ansible_version.string }}."
+  run_once: yes

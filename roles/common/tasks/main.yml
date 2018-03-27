@@ -1,9 +1,15 @@
 ---
+  - include: check-preconditions.yml
+
+  - include: update-upgrade.yml
   - include: uninstall.yml
 
+  #- include: git.yml
   #- include: fish.yml
   #- include: docker.yml
   #- include: java.yml
+  #- include: chrome.yml
+  #- include: spotify.yml
 
   #- include: virtualbox.yml
-  #- include: vagrant.yml
+  - include: vagrant.yml
