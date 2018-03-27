@@ -1,0 +1,64 @@
+---
+- name: install blackbox - setup environment
+  become: true
+  apt: name={{item}} state=installed
+  with_items:
+    - "ruby"
+    - "ruby-dev"
+    - "rubygems"
+    - "build-essential"
+
+- name: install blackbox - install fpm gem
+  become: true
+  gem:
+    name: fpm
+    state: present
+    user_install: no
+
+- name: install blackbox - git clone blackbox repository
+  git:
+    repo: "https://github.com/StackExchange/blackbox.git"
+    dest: "/home/{{ username }}/blackbox"
+
+- name: install blackbox - make .deb package
+  command: "make packages-deb"
+  args:
+    chdir: "/home/{{ username }}/blackbox"
+
+- name: install blackbox - find .deb file
+  shell: "find /home/{{ username }} -name '*blackbox*.deb'"
+  register: blackbox_deb_file
+
+- name: install blackbox - install from .deb file
+  become: true
+  shell: "dpkg -i {{ blackbox_deb_file.stdout }}"
+
+# for blackbox you should use GPG version greater than 2.1.20, best 2.2.5 or higher,
+# otherwise you may get errors like 'skipped packet of type 12 in keybox'
+# so we have to install a newer GPG version
+- name: install blackbox - copy local file for gpg install
+  copy:
+    src: "../files/install-gpg-2.2.x.sh"
+    dest: "/home/{{ username }}/install-gpg-2.2.x.sh"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0660
+
+- name: install blackbox - install gpg 2.2.x
+  become: true
+  script: "/home/{{ username }}/install-gpg-2.2.x.sh"
+
+- name: install blackbox - remove .deb file
+  file:
+    path: "{{ blackbox_deb_file.stdout }}"
+    state: absent
+
+- name: install blackbox - remove git repository
+  file:
+    path: "/home/{{ username }}/blackbox"
+    state: absent
+
+- name: install blackbox - remove local file for gpg install
+  file:
+    path: "/home/{{ username }}/install-gpg-2.2.x.sh"
+    state: absent
