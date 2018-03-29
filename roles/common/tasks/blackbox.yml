@@ -36,29 +36,31 @@
 # for blackbox you should use GPG version greater than 2.1.20, best 2.2.5 or higher,
 # otherwise you may get errors like 'skipped packet of type 12 in keybox'
 # so we have to install a newer GPG version
-- name: install blackbox - copy local file for gpg install
-  copy:
-    src: "../files/install-gpg-2.2.x.sh"
-    dest: "/home/{{ username }}/install-gpg-2.2.x.sh"
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: 0660
+- block:
+  - name: install blackbox - copy local file for gpg install
+    copy:
+      src: "../files/install-gpg-2.2.x.sh"
+      dest: "/home/{{ username }}/install-gpg-2.2.x.sh"
+      owner: "{{ username }}"
+      group: "{{ username }}"
+      mode: 0660
 
-- name: install blackbox - install gpg 2.2.x
-  become: true
-  script: "/home/{{ username }}/install-gpg-2.2.x.sh"
+  - name: install blackbox - install gpg 2.2.x
+    become: true
+    script: "/home/{{ username }}/install-gpg-2.2.x.sh"
 
-- name: install blackbox - remove .deb file
-  file:
-    path: "{{ blackbox_deb_file.stdout }}"
-    state: absent
+- block:
+  - name: install blackbox - remove .deb file
+    file:
+      path: "{{ blackbox_deb_file.stdout }}"
+      state: absent
 
-- name: install blackbox - remove git repository
-  file:
-    path: "/home/{{ username }}/blackbox"
-    state: absent
+  - name: install blackbox - remove git repository
+    file:
+      path: "/home/{{ username }}/blackbox"
+      state: absent
 
-- name: install blackbox - remove local file for gpg install
-  file:
-    path: "/home/{{ username }}/install-gpg-2.2.x.sh"
-    state: absent
+  - name: install blackbox - remove local file for gpg install
+    file:
+      path: "/home/{{ username }}/install-gpg-2.2.x.sh"
+      state: absent
