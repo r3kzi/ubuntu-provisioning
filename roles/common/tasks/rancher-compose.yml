@@ -1,0 +1,46 @@
+---
+- name: install rancher-compose - set rancher-compose version
+  set_fact:
+    rancher_compose_version: "0.12.5"
+
+- name: install rancher-compose - set facts for task
+  set_fact:
+    rancher_compose_install_dir:  "/home/{{ username }}/rancher-compose-install"
+    rancher_compose_download_url: "https://github.com/rancher/rancher-compose/releases/download/v{{ rancher_compose_version }}/rancher-compose-linux-amd64-v{{ rancher_compose_version }}.tar.gz"
+
+- name: install rancher-compose - create ~/rancher-compose-install
+  file:
+    path: "{{ rancher_compose_install_dir }}"
+    state: directory
+    force: yes
+
+- name: install rancher-compose - download rancher-compose
+  get_url:
+    url:  "{{ rancher_compose_download_url }}"
+    dest: "{{ rancher_compose_install_dir }}/rancher-compose-linux-amd64-v{{ rancher_compose_version }}.tar.gz"
+    mode: 0440
+
+- name: install rancher-compose - make local bin dir
+  file:
+    path: "/home/{{ username }}/.local/bin"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    state: directory
+    force: yes
+
+- name: install rancher-compose - extract rancher-compose archive
+  unarchive:
+    src: "{{ rancher_compose_install_dir }}/rancher-compose-linux-amd64-v{{ rancher_compose_version }}.tar.gz"
+    dest: "/home/{{ username }}/.local/bin/"
+
+- name: install rancher-compose - symlink rancher-compose to /bin
+  become: true
+  file:
+    src: "/home/{{ username }}/.local/bin/rancher-compose-v{{ rancher_compose_version }}/rancher-compose"
+    dest: "/bin/rancher-compose"
+    state: link
+
+- name: cleanup rancher-compose install dir
+  file:
+    path: "{{ rancher_compose_install_dir }}"
+    state: absent
