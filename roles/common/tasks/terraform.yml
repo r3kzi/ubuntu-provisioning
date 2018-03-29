@@ -1,0 +1,98 @@
+---
+- name: install terraform - set terraform version
+  set_fact:
+    terraform_version:        "0.11.5"
+
+- name: install terraform - set facts for installation
+  set_fact:
+    hashicorp_gpg_key_id:     "51852D87348FFC4C"
+    terraform_install_dir:    "/home/{{ username }}/terraform-install"
+    terraform_sha256_url:     "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_SHA256SUMS"
+    terraform_sha256_sig_url: "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_SHA256SUMS.sig"
+    terraform_download_url:   "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip"
+
+- name: install vagrant - create ~/terraform-install
+  file:
+    path: "{{ terraform_install_dir }}"
+    state: directory
+    force: yes
+
+# add and create gpg key file
+- block:
+    - name: install terraform - add hashicorp gpg key
+      become: true
+      shell: "gpg --keyserver hkp://keys.gnupg.net --recv-keys {{ hashicorp_gpg_key_id }}"
+
+    - name: install terraform - export key
+      become: true
+      shell: "gpg -a --export {{ hashicorp_gpg_key_id }}"
+      register: hashicorp_gpg
+
+    - name: install terraform - create gpg key file
+      become: true
+      copy:
+        content: "{{hashicorp_gpg.stdout}}"
+        dest: "{{ terraform_install_dir }}/hashicorp_gpg.asc"
+
+# register sha256 checksum
+- block:
+    - name: install terraform - download terraform sha256 file
+      become: true
+      get_url:
+        url: "{{ terraform_sha256_url }}"
+        dest: "{{ terraform_install_dir }}/terraform_{{ terraform_version }}_SHA256SUMS"
+        mode: 0440
+
+    - name: install terraform - download terraform sha256 sig file
+      become: true
+      get_url:
+        url: "{{ terraform_sha256_sig_url }}"
+        dest: "{{ terraform_install_dir }}/terraform_{{ terraform_version }}_SHA256SUMS.sig"
+        mode: 0440
+
+    - name: install terraform - check sha256 integrity
+      become: true
+      shell: "gpg --verify
+      {{ terraform_install_dir }}/terraform_{{ terraform_version }}_SHA256SUMS.sig
+      {{ terraform_install_dir }}/terraform_{{ terraform_version }}_SHA256SUMS"
+
+    - name: install terraform - extract sha256 checksum
+      become: true
+      shell: "cat {{ terraform_install_dir }}/terraform_{{ terraform_version }}_SHA256SUMS | grep -e 'terraform_{{ terraform_version }}_linux_amd64.zip' | cut -d' ' -f1"
+      register: terraform_sha256_checksum
+
+    - name: install terraform - set sha256 checksum fact
+      set_fact:
+        sha256_value: "{{ terraform_sha256_checksum.stdout }}"
+
+- name: install terraform - download terraform zip file
+  get_url:
+    url: "{{ terraform_download_url }}"
+    dest: "{{ terraform_install_dir }}/terraform_{{ terraform_version }}_linux_amd64.zip"
+    checksum: "sha256:{{ sha256_value }}"
+    mode: 0660
+
+- name: install terraform - make local bin dir
+  file:
+    path: "/home/{{ username }}/.local/bin"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    state: directory
+    force: yes
+
+- name: install terraform - unzip terraform archive
+  unarchive:
+    src: "{{ terraform_install_dir }}/terraform_{{ terraform_version }}_linux_amd64.zip"
+    dest: "/home/{{ username }}/.local/bin/"
+
+- name: install terraform - symlink terraform to /bin
+  become: true
+  file:
+    src: "/home/{{ username }}/.local/bin/terraform"
+    dest: "/bin/terraform"
+    state: link
+
+- name: cleanup terraform install dirs
+  file:
+    path: "{{ terraform_install_dir }}"
+    state: absent
