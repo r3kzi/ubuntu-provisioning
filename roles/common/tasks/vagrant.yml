@@ -1,74 +1,92 @@
 ---
-- name: install vagrant - set facts for tasks
+- name: install vagrant - set vagrant version
   set_fact:
-    vagrant_install_dir: "/home/{{ username }}/vagrant-install"
-    hashicorp_gpg_key_id: "51852D87348FFC4C"
+    vagrant_version:        "2.0.3"
 
-- name: install vagrant - create /tmp/vagrant
+- name: install terraform - set facts for installation
+  set_fact:
+    hashicorp_gpg_key_id:   "51852D87348FFC4C"
+    vagrant_install_dir:    "/home/{{ username }}/vagrant-install"
+    vagrant_sha256_url:     "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/vagrant_{{ vagrant_version }}_SHA256SUMS"
+    vagrant_sha256_sig_url: "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/vagrant_{{ vagrant_version }}_SHA256SUMS.sig"
+    vagrant_download_url:   "https://releases.hashicorp.com/vagrant/{{ vagrant_version }}/vagrant_{{ vagrant_version }}_x86_64.deb"
+
+- name: install vagrant - create ~/vagrant-install
   file:
     path: "{{ vagrant_install_dir }}"
     state: directory
     force: yes
 
-- name: install vagrant - add hashicorp gpg key
-  become: true
-  shell: "gpg --keyserver hkp://keys.gnupg.net --recv-keys {{ hashicorp_gpg_key_id }}"
+# add and create gpg key file
+- block:
+  - name: install vagrant - add hashicorp gpg key
+    become: true
+    shell: "gpg --keyserver hkp://keys.gnupg.net --recv-keys {{ hashicorp_gpg_key_id }}"
 
-- name: install vagrant - export key
-  become: true
-  shell: "gpg -a --export {{ hashicorp_gpg_key_id }}"
-  register: hashicorp_gpg
+  - name: install vagrant - export key
+    become: true
+    shell: "gpg -a --export {{ hashicorp_gpg_key_id }}"
+    register: hashicorp_gpg
 
-- name: install vagrant - create gpg key file
-  become: true
-  copy:
-     content: "{{hashicorp_gpg.stdout}}"
-     dest: "{{ vagrant_install_dir }}/hashicorp_gpg.asc"
+  - name: install vagrant - create gpg key file
+    become: true
+    copy:
+       content: "{{hashicorp_gpg.stdout}}"
+       dest: "{{ vagrant_install_dir }}/hashicorp_gpg.asc"
 
-- name: install vagrant - download hashicorps sha256 file
-  become: true
-  get_url:
-    url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_SHA256SUMS"
-    dest: "{{ vagrant_install_dir }}/hashicorp_sha256sum"
-    mode: 0440
+# register sha256 checksum
+- block:
+  - name: install vagrant - download hashicorps sha256 file
+    become: true
+    get_url:
+      url: "{{ vagrant_sha256_url }}"
+      dest: "{{ vagrant_install_dir }}/vagrant_{{ vagrant_version }}_SHA256SUMS"
+      mode: 0440
 
-- name: install vagrant - download hashicorps sha256 sig file
-  become: true
-  get_url:
-    url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_SHA256SUMS.sig"
-    dest: "{{ vagrant_install_dir }}/hashicorp_sha256sum.sig"
-    mode: 0440
+  - name: install vagrant - download hashicorps sha256 sig file
+    become: true
+    get_url:
+      url: "{{ vagrant_sha256_sig_url }}"
+      dest: "{{ vagrant_install_dir }}/vagrant_{{ vagrant_version }}_SHA256SUMS.sig"
+      mode: 0440
 
-- name: install vagrant - check sha256 integrity
-  become: true
-  shell: "gpg --verify {{ vagrant_install_dir }}/hashicorp_sha256sum.sig {{ vagrant_install_dir }}/hashicorp_sha256sum"
+  - name: install vagrant - check sha256 integrity
+    become: true
+    shell: "gpg --verify
+    {{ vagrant_install_dir }}/vagrant_{{ vagrant_version }}_SHA256SUMS.sig
+    {{ vagrant_install_dir }}/vagrant_{{ vagrant_version }}_SHA256SUMS"
 
-- name: install vagrant - extract .deb sha256 checksum
-  become: true
-  shell: "cat {{ vagrant_install_dir }}/hashicorp_sha256sum | grep -e 'vagrant_2.0.3_x86_64.deb' | cut -d' ' -f1"
-  register: deb_sha256_checksum
+  - name: install vagrant - extract .deb sha256 checksum
+    become: true
+    shell: "cat {{ vagrant_install_dir }}/vagrant_{{ vagrant_version }}_SHA256SUMS | grep -e 'vagrant_{{ vagrant_version }}_x86_64.deb' | cut -d' ' -f1"
+    register: deb_sha256_checksum
 
-- name: install vagrant - set sha256 checksum fact
-  set_fact:
-    sha256_value: "{{ deb_sha256_checksum.stdout }}"
+  - name: install vagrant - set sha256 checksum fact
+    set_fact:
+      sha256_value: "{{ deb_sha256_checksum.stdout }}"
 
 - name: install vagrant - download vagrant .deb package
   get_url:
-    url: "https://releases.hashicorp.com/vagrant/2.0.3/vagrant_2.0.3_x86_64.deb"
-    dest: "{{ vagrant_install_dir }}/vagrant.deb"
+    url: "{{ vagrant_download_url }}"
+    dest: "{{ vagrant_install_dir }}/vagrant_{{ vagrant_version }}_x86_64.deb"
     checksum: "sha256:{{ sha256_value }}"
     mode: 0660
 
 - name: install vagrant - install from .deb package
   become: true
   apt:
-    deb: "{{ vagrant_install_dir }}/vagrant.deb"
+    deb: "{{ vagrant_install_dir }}/vagrant_{{ vagrant_version }}_x86_64.deb"
 
 - name: install vagrant - change ownership for ~/.vagrant.d folder
   become: true
   file:
-    path: "/home{{ username }}/.vagrant.d"
+    path: "/home/{{ username }}/.vagrant.d"
     owner: "{{ username }}"
     group: "{{ username }}"
     state: directory
     recurse: yes
+
+- name: install vagrant - clean up vagrant install dir
+  file:
+    path: "{{ vagrant_install_dir }}"
+    state: absent
