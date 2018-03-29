@@ -1,16 +1,17 @@
 ---
   - include: check-preconditions.yml
-
   #- include: update-upgrade.yml
-  #- include: uninstall.yml
 
-  - include: blackbox.yml
-  #- include: git.yml
-  #- include: fish.yml
-  #- include: docker.yml
-  #- include: java.yml
+  #- include: blackbox.yml
   #- include: chrome.yml
+  #- include: docker.yml
+  #- include: fish.yml
+  #- include: git.yml
+  #- include: java.yml
+  #- include: openvpn.yml
+  #- include: rancher-compose.yml
   #- include: spotify.yml
-
-  #- include: virtualbox.yml
+  #- include: terraform.yml
   #- include: vagrant.yml
+  #- include: virtualbox.yml
+  #- include: uninstall.yml
