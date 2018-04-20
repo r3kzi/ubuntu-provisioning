@@ -1,0 +1,12 @@
+---
+- name: install keepassxc - add repository
+  become: true
+  apt_repository:
+    repo: "ppa:phoerious/keepassxc"
+    state: present
+
+- name: install keepassxc - install
+  become: true
+  apt:
+    name: keepassxc
+    update_cache: yes
