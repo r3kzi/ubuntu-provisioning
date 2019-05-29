@@ -1,3 +1,5 @@
 .idea
 .vagrant
 *.iml
+ansible.log
+plays/playbook.retry
