@@ -1,0 +1,66 @@
+---
+- name: install terragrunt - set terragrunt version
+  set_fact:
+    terragrunt_version:        "v0.19.7"
+
+- name: install terragrunt - set facts for installation
+  set_fact:
+    terragrunt_install_dir:    "/home/{{ username }}/terragrunt-install"
+    terragrunt_sha256_url:     "https://github.com/gruntwork-io/terragrunt/releases/download/{{ terragrunt_version }}/SHA256SUMS"
+    terragrunt_download_url:   "https://github.com/gruntwork-io/terragrunt/releases/download/{{ terragrunt_version }}/terragrunt_linux_amd64"
+
+- name: install terragrunt - create ~/terragrunt-install
+  file:
+    path: "{{ terragrunt_install_dir }}"
+    state: directory
+    force: yes
+
+- block:
+    - name: install terragrunt - download terragrunt sha256 file
+      become: true
+      get_url:
+        url: "{{ terragrunt_sha256_url }}"
+        dest: "{{ terragrunt_install_dir }}/terragrunt_{{ terragrunt_version }}_SHA256SUMS"
+        mode: 0440
+
+    - name: install terragrunt - extract sha256 checksum
+      become: true
+      shell: "cat {{ terragrunt_install_dir }}/terragrunt_{{ terragrunt_version }}_SHA256SUMS | grep -e 'terragrunt_linux_amd64' | cut -d' ' -f1"
+      register: terragrunt_sha256_checksum
+
+    - name: install terragrunt - set sha256 checksum fact
+      set_fact:
+        sha256_value: "{{ terragrunt_sha256_checksum.stdout }}"
+
+- name: install terragrunt - download terragrunt
+  get_url:
+    url: "{{ terragrunt_download_url }}"
+    dest: "{{ terragrunt_install_dir }}"
+    checksum: "sha256:{{ sha256_value }}"
+    mode: 0777
+
+- name: install terragrunt - make local bin dir
+  file:
+    path: "/home/{{ username }}/.local/bin"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    state: directory
+    force: yes
+
+- name: install terragrunt - copy terragrunt binary
+  copy:
+    src: "{{ terragrunt_install_dir }}/terragrunt_linux_amd64"
+    dest: "/home/{{ username }}/.local/bin/terragrunt_linux_amd64"
+
+- name: install terragrunt - symlink terragrunt to /bin
+  become: true
+  file:
+    src: "/home/{{ username }}/.local/bin/terragrunt_linux_amd64"
+    dest: "/bin/terragrunt"
+    state: link
+    mode: 0777
+
+- name: cleanup terragrunt install dir
+  file:
+    path: "{{ terragrunt_install_dir }}"
+    state: absent
