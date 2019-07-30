@@ -1,0 +1,15 @@
+---
+- name: install direnv - apt install
+  become: true
+  apt:
+    name: direnv
+    update_cache: yes
+
+# i am using the fish shell, for other shells see https://direnv.net/docs/hook.md
+- name: install direnv - hook direnv your shell
+  lineinfile:
+    path: "/home/{{ username }}//.config/fish/config.fish"
+    line: "direnv hook fish | source"
+
+- debug:
+    msg: "Restart your shell for direnv to be activated."

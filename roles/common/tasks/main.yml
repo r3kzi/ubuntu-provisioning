@@ -6,6 +6,7 @@
   #- include: chrome.yml
   #- include: docker.yml
   #- include: fish.yml
+  #- include: direnv.yml
   #- include: git.yml
   #- include: java.yml
   #- include: keepassxc.yml
