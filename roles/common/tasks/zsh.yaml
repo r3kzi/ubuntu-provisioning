@@ -1,0 +1,32 @@
+---
+- name: install zsh - apt install
+  become: true
+  apt:
+    name: zsh
+    update_cache: yes
+
+- name: install zsh - clone zsh autosuggestions plugin
+  git:
+    repo: "https://github.com/zsh-users/zsh-autosuggestions"
+    dest: "/home/{{ username }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+
+- name: install zsh - clone powerlevel10k theme
+  git:
+    repo: "https://github.com/romkatv/powerlevel10k.git"
+    dest: "/home/{{ username }}/~/.oh-my-zsh/custom/themes/powerlevel10k"
+
+- name: install zsh - copy .zshrc
+  copy:
+    src: "../files/.zshrc"
+    dest: "/home/{{ username }}/.zshrc"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0660
+
+- name: install zsh - copy .tmux.conf
+  copy:
+    src: "../files/.tmux.conf"
+    dest: "/home/{{ username }}/.tmux.conf"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0660

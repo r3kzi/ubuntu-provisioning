@@ -18,3 +18,4 @@
   #- include: vagrant.yml
   #- include: virtualbox.yml
   #- include: uninstall.yml
+  #- include: zsh.yaml
