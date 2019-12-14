@@ -1,0 +1,51 @@
+---
+- name: install aws-iam-authenticator - set aws-iam-authenticator version
+  set_fact:
+    aws_iam_authenticator_version:  "1.14.6"
+
+- name: install aws-iam-authenticator - set facts for installation
+  set_fact:
+    aws_iam_authenticator_install_dir:          "/home/{{ username }}/aws-iam-authenticator"
+    aws_iam_authenticator_download_url:         "https://amazon-eks.s3-us-west-2.amazonaws.com/{{ aws_iam_authenticator_version }}/2019-08-22/bin/linux/amd64/aws-iam-authenticator"
+    aws_iam_authenticator_sha256_download_url:  "https://amazon-eks.s3-us-west-2.amazonaws.com/{{ aws_iam_authenticator_version }}/2019-08-22/bin/linux/amd64/aws-iam-authenticator.sha256"
+
+- name: install aws-iam-authenticator - create ~/aws-iam-authenticator
+  file:
+    path: "{{ aws_iam_authenticator_install_dir }}"
+    state: directory
+    force: yes
+
+- block:
+    - name: install aws-iam-authenticator - download aws-iam-authenticator sha256 file
+      get_url:
+        url: "{{ aws_iam_authenticator_sha256_download_url }}"
+        dest: "{{ aws_iam_authenticator_install_dir }}/aws-iam-authenticator.sha256"
+        mode: 0440
+
+    - name: install aws-iam-authenticator - extract sha256 checksum
+      become: true
+      shell: "cat {{ aws_iam_authenticator_install_dir }}/aws-iam-authenticator.sha256 | cut -f1 -d ' '"
+      register: aws_iam_authenticator_sha256_checksum
+
+    - name: install aws-iam-authenticator - set sha256 checksum fact
+      set_fact:
+        sha256_value: "{{ aws_iam_authenticator_sha256_checksum.stdout }}"
+
+- name: install aws-iam-authenticator - download aws-iam-authenticator
+  get_url:
+    url: "{{ aws_iam_authenticator_download_url }}"
+    dest: "{{ aws_iam_authenticator_install_dir }}/aws-iam-authenticator"
+    mode: 0660
+    checksum: "sha256:{{ sha256_value }}"
+
+- name: install aws-iam-authenticator - copy file and set permissions
+  become: true
+  copy:
+    src: "{{ aws_iam_authenticator_install_dir }}/aws-iam-authenticator"
+    dest: "/usr/local/bin/aws-iam-authenticator"
+    mode: "a+x"
+
+- name: install aws-iam-authenticator - create ~/aws-iam-authenticator
+  file:
+    path: "{{ aws_iam_authenticator_install_dir }}"
+    state: absent

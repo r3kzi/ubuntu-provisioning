@@ -3,6 +3,7 @@
   #- include: update-upgrade.yml
 
   #- include: aws-cli.yml
+  #- include: aws-iam-authenticator.yml
   #- include: blackbox.yml
   #- include: chrome.yml
   #- include: docker.yml
