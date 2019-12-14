@@ -33,22 +33,6 @@
   become: true
   shell: "dpkg -i {{ blackbox_deb_file.stdout }}"
 
-# for blackbox you should use GPG version greater than 2.1.20, best 2.2.5 or higher,
-# otherwise you may get errors like 'skipped packet of type 12 in keybox'
-# so we have to install a newer GPG version
-- block:
-  - name: install blackbox - copy local file for gpg install
-    copy:
-      src: "../files/install-gpg-2.2.x.sh"
-      dest: "/home/{{ username }}/install-gpg-2.2.x.sh"
-      owner: "{{ username }}"
-      group: "{{ username }}"
-      mode: 0660
-
-  - name: install blackbox - install gpg 2.2.x
-    become: true
-    script: "/home/{{ username }}/install-gpg-2.2.x.sh"
-
 - block:
   - name: install blackbox - remove .deb file
     file:
