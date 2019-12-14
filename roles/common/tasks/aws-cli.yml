@@ -1,0 +1,31 @@
+---
+- name: install aws-cli - set facts for installation
+  set_fact:
+    aws_cli_install_dir:   "/home/{{ username }}/aws-cli-install"
+    aws_cli_download_url:  "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip"
+
+- name: install aws-cli - create ~/aws-cli-install
+  file:
+    path: "{{ aws_cli_install_dir }}"
+    state: directory
+    force: yes
+
+- name: install aws-cli - download aws-cli-bundle
+  get_url:
+    url: "{{ aws_cli_download_url }}"
+    dest: "{{ aws_cli_install_dir }}/awscli-bundle.zip"
+    mode: 0660
+
+- name: install aws-cli - unpack aws-cli-bundle
+  unarchive:
+    src: "{{ aws_cli_install_dir }}/awscli-bundle.zip"
+    dest: "{{ aws_cli_install_dir }}"
+
+- name: install aws-cli - run installation script
+  shell: "{{ aws_cli_install_dir }}/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws"
+  become: true
+
+- name: install aws-cli - remove ~/aws-cli-install
+  file:
+    path: "{{ aws_cli_install_dir }}"
+    state: absent

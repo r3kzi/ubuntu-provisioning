@@ -2,6 +2,7 @@
   - include: check-preconditions.yml
   #- include: update-upgrade.yml
 
+  #- include: aws-cli.yml
   #- include: blackbox.yml
   #- include: chrome.yml
   #- include: docker.yml
