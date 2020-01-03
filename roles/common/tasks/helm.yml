@@ -1,0 +1,56 @@
+---
+- name: install helm - set helm version
+  set_fact:
+    helm_version: "v3.0.2"
+
+- name: install helm - set facts for installation
+  set_fact:
+    helm_install_dir:    "/home/{{ username }}/helm-install"
+    helm_sha256_url:     "https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz.sha256"
+    helm_download_url:   "https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz"
+
+- name: install helm - create ~/helm-install
+  file:
+    path: "{{ helm_install_dir }}"
+    state: directory
+    force: yes
+
+- block:
+    - name: install helm - download helm sha256 checksum
+      become: true
+      get_url:
+        url: "{{ helm_sha256_url }}"
+        dest: "{{ helm_install_dir }}/helm_{{ helm_version }}.tar.gz.sha256"
+        mode: 0440
+
+    - name: install helm - extract sha256 checksum
+      become: true
+      shell: "cat {{ helm_install_dir }}/helm_{{ helm_version }}.tar.gz.sha256"
+      register: helm_sha256
+
+    - name: install helm - set sha256 checksum
+      set_fact:
+        sha256: "{{ helm_sha256.stdout }}"
+
+- name: install helm - download helm
+  get_url:
+    url: "{{ helm_download_url }}"
+    dest: "{{ helm_install_dir }}/helm_{{ helm_version }}.tar.gz"
+    checksum: "sha256:{{ sha256 }}"
+    mode: 0660
+
+- name: install helm - untar helm archive
+  unarchive:
+    src: "{{ helm_install_dir }}/helm_{{ helm_version }}.tar.gz"
+    dest: "{{ helm_install_dir }}/"
+
+- name: install helm - copy helm binary
+  become: true
+  copy:
+    src: "{{ helm_install_dir }}/linux-amd64/helm"
+    dest: "/usr/local/bin/helm"
+
+- name: cleanup helm install dirs
+  file:
+    path: "{{ helm_install_dir }}"
+    state: absent
