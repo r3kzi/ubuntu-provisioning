@@ -1,7 +1,7 @@
 ---
 - name: install terragrunt - set terragrunt version
   set_fact:
-    terragrunt_version:        "v0.19.7"
+    terragrunt_version:        "v0.21.10"
 
 - name: install terragrunt - set facts for installation
   set_fact:
