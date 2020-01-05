@@ -1,0 +1,24 @@
+---
+- name: install insomnia - set facts
+  set_fact:
+    insomnia_key_url: "https://insomnia.rest/keys/debian-public.key.asc"
+    insomnia_repo_url: "deb https://dl.bintray.com/getinsomnia/Insomnia /"
+
+- name: install insomnia - add apt key
+  become: true
+  apt_key:
+    url: "{{ insomnia_key_url }}"
+    state: present
+
+- name: install insomnia - add repository
+  become: true
+  apt_repository:
+    repo: "{{ insomnia_repo_url }}"
+    state: present
+
+- name: install insomnia - install
+  become: true
+  apt:
+    name: insomnia
+    update_cache: yes
+

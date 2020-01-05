@@ -11,6 +11,7 @@
   #- include: direnv.yml
   #- include: git.yml
   #- include: helm.yml
+  #- include: insomnia.yml
   #- include: java.yml
   #- include: keepassxc.yml
   #- include: openvpn.yml
