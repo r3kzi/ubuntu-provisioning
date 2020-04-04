@@ -1,0 +1,46 @@
+- name: install kind - set version
+  set_fact:
+    kind_version:        "v0.7.0"
+
+- name: install kind - set facts for installation
+  set_fact:
+    kind_install_dir:    "/home/{{ username }}/kind-install"
+    kind_download_url:   "https://github.com/kubernetes-sigs/kind/releases/download/{{ kind_version }}/kind-linux-amd64"
+
+- name: install kind - create ~/kind-install
+  file:
+    path: "{{ kind_install_dir }}"
+    state: directory
+    force: yes
+
+- name: install kind - download
+  get_url:
+    url: "{{ kind_download_url }}"
+    dest: "{{ kind_install_dir }}"
+    mode: 0777
+
+- name: install kind - make local bin dir
+  file:
+    path: "/home/{{ username }}/.local/bin"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    state: directory
+    force: yes
+
+- name: install kind - copy binary
+  copy:
+    src: "{{ kind_install_dir }}/kind-linux-amd64"
+    dest: "/home/{{ username }}/.local/bin/kind-linux-amd64"
+
+- name: install kind - symlink to /bin
+  become: true
+  file:
+    src: "/home/{{ username }}/.local/bin/kind-linux-amd64"
+    dest: "/bin/kind"
+    state: link
+    mode: a+x
+
+- name: cleanup install dir
+  file:
+    path: "{{ kind_install_dir }}"
+    state: absent

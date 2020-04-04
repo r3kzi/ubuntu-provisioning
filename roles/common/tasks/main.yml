@@ -14,6 +14,7 @@
   #- include: insomnia.yml
   #- include: java.yml
   #- include: keepassxc.yml
+  #- include: kind.yml
   #- include: openvpn.yml
   #- include: rancher-compose.yml
   #- include: spotify.yml
