@@ -1,0 +1,8 @@
+- name: install zoom - set facts
+  set_fact:
+    zoom_download_url: "https://zoom.us/client/latest/zoom_amd64.deb"
+
+- name: install zoom - install .deb package
+  become: true
+  apt:
+    deb: "{{ zoom_download_url }}"
