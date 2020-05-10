@@ -9,6 +9,7 @@
   #- include: docker.yml
   #- include: fish.yml
   #- include: direnv.yml
+  #- include: discord.yml
   #- include: git.yml
   #- include: helm.yml
   #- include: insomnia.yml

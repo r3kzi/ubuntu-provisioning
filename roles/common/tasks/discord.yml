@@ -1,0 +1,27 @@
+---
+- name: install discord - set facts
+  set_fact:
+    discord_install_dir:    "/home/{{ username }}/discord-install"
+    discord_download_url:   "https://discord.com/api/download?platform=linux&format=deb"
+
+- name: install discord - create ~/discord-install
+  file:
+    path: "{{ discord_install_dir }}"
+    state: directory
+    force: yes
+    
+- name: install discord - download discord .deb package
+  get_url:
+    url: "{{ discord_download_url }}"
+    dest: "{{ discord_install_dir }}/discord.deb"
+    mode: 0660
+
+- name: install discord - install from .deb package
+  become: true
+  apt:
+    deb: "{{ discord_install_dir }}/discord.deb"
+
+- name: install discord - clean up discord install dir
+  file:
+    path: "{{ discord_install_dir }}"
+    state: absent
