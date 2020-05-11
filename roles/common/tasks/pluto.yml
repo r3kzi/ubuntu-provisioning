@@ -1,0 +1,59 @@
+---
+# https://github.com/FairwindsOps/pluto
+
+- name: install pluto - set version
+  set_fact:
+    pluto_version: "2.0.2"
+
+- name: install pluto - set facts
+  set_fact:
+    pluto_install_dir:  "/home/{{ username }}/pluto-install"
+    pluto_checksum_url: "https://github.com/FairwindsOps/pluto/releases/download/v{{ pluto_version }}/pluto_{{ pluto_version }}_checksums.txt"
+    pluto_download_url: "https://github.com/FairwindsOps/pluto/releases/download/v{{ pluto_version }}/pluto_{{ pluto_version }}_linux_amd64.tar.gz"
+
+- name: install pluto - create ~/pluto-install
+  file:
+    path: "{{ pluto_install_dir }}"
+    state: directory
+    force: yes
+
+- block:
+    - name: install pluto - download sha256 checksum
+      become: true
+      get_url:
+        url: "{{ pluto_checksum_url }}"
+        dest: "{{ pluto_install_dir }}/pluto_{{ pluto_version }}_checksums.txt"
+        mode: 0440
+    
+    - name: install pluto - extract sha256 checksum
+      become: true
+      shell: "cat {{ pluto_install_dir }}/pluto_{{ pluto_version }}_checksums.txt | grep -e 'pluto_{{ pluto_version }}_linux_amd64.tar.gz' | cut -d' ' -f1"
+      register: pluto_sha256
+    
+    - name: install pluto - set sha256 checksum
+      set_fact:
+        sha256: "{{ pluto_sha256.stdout }}"
+        
+- name: install pluto - download
+  get_url:
+    url: "{{ pluto_download_url }}"
+    dest: "{{ pluto_install_dir }}/pluto_{{ pluto_version }}_linux_amd64.tar.gz"
+    checksum: "sha256:{{ sha256 }}"
+    mode: 0660
+
+- name: install pluto - untar archive
+  unarchive:
+    src: "{{ pluto_install_dir }}/pluto_{{ pluto_version }}_linux_amd64.tar.gz"
+    dest: "{{ pluto_install_dir }}/"
+
+- name: install pluto - copy binary
+  become: true
+  copy:
+    src: "{{ pluto_install_dir }}/pluto"
+    dest: "/usr/local/bin/pluto"
+    mode: "a+x"
+
+- name: cleanup install dirs
+  file:
+    path: "{{ pluto_install_dir }}"
+    state: absent

@@ -17,6 +17,7 @@
   #- include: keepassxc.yml
   #- include: kind.yml
   #- include: openvpn.yml
+  #- include: pluto.yml
   #- include: rancher-compose.yml
   #- include: spotify.yml
   #- include: terraform.yml
