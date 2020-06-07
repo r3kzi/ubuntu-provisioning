@@ -1,0 +1,27 @@
+---
+- name: install hyper - set facts
+  set_fact:
+    hyper_install_dir:    "/home/{{ username }}/hyper-install"
+    hyper_download_url:   "https://releases.hyper.is/download/deb"
+
+- name: install hyper - create ~/hyper-install
+  file:
+    path: "{{ hyper_install_dir }}"
+    state: directory
+    force: yes
+
+- name: install hyper - download hyper .deb package
+  get_url:
+    url: "{{ hyper_download_url }}"
+    dest: "{{ hyper_install_dir }}/hyper.deb"
+    mode: 0660
+
+- name: install hyper - install from .deb package
+  become: true
+  apt:
+    deb: "{{ hyper_install_dir }}/hyper.deb"
+
+- name: install hyper - clean up hyper install dir
+  file:
+    path: "{{ hyper_install_dir }}"
+    state: absent
