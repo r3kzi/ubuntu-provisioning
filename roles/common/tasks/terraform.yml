@@ -1,7 +1,7 @@
 ---
 - name: install terraform - set terraform version
   set_fact:
-    terraform_version:        "0.12.26"
+    terraform_version:        "0.12.28"
 
 - name: install terraform - set facts for installation
   set_fact:
