@@ -21,9 +21,15 @@
     src: "{{ aws_cli_install_dir }}/awscliv2.zip"
     dest: "{{ aws_cli_install_dir }}"
 
+- name: install aws-cli - check preexisting install dir
+  stat:
+    path: /usr/local/aws-cli/v2/current
+  register: stat_result
+
 - name: install aws-cli - run installation script
   shell: "{{ aws_cli_install_dir }}/aws/install"
   become: true
+  when: stat_result.stat.exists == False
 
 - name: install aws-cli - remove ~/aws-cli-install
   file:
