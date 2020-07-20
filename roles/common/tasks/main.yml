@@ -17,6 +17,7 @@
   #- include: java.yml
   #- include: keepassxc.yml
   #- include: kind.yml
+  #- include: kubectl.yml
   #- include: openvpn.yml
   #- include: pluto.yml
   #- include: rancher-compose.yml

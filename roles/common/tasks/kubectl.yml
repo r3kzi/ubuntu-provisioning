@@ -1,0 +1,32 @@
+---
+- name: install kubectl - set facts for task
+  set_fact:
+    kubectl_apt_key_url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+    kubectl_apt_repo_url: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+
+- name: install kubectl - setup environment
+  become: true
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - software-properties-common
+    state: present
+
+- name: install kubectl - add kubectl gpg key
+  become: true
+  apt_key:
+    url: "{{ kubectl_apt_key_url }}"
+    state: present
+
+- name: install kubectl - add stable repository
+  become: true
+  apt_repository:
+    repo: "{{ kubectl_apt_repo_url }}"
+    state: present
+
+- name: install kubectl - install kubectl package
+  become: true
+  apt:
+    name: kubectl
+    state: present
