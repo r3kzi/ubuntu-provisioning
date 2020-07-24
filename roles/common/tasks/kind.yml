@@ -1,6 +1,6 @@
 - name: install kind - set version
   set_fact:
-    kind_version:        "v0.7.0"
+    kind_version:        "v0.8.1"
 
 - name: install kind - set facts for installation
   set_fact:
