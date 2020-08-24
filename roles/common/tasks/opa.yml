@@ -1,0 +1,50 @@
+---
+- name: install opa - set opa version
+  set_fact:
+    opa_version:  "0.23.1"
+
+- name: install opa - set facts for installation
+  set_fact:
+    opa_install_dir:  "/home/{{ username }}/opa-install"
+    opa_download_url: "https://github.com/open-policy-agent/opa/releases/download/v{{ opa_version }}/opa_linux_amd64"
+
+- name: install opa - create ~/opa-install
+  file:
+    path: "{{ opa_install_dir }}"
+    state: directory
+    force: yes
+
+- name: install opa - download opa binary
+  get_url:
+    url: "{{ opa_download_url }}"
+    dest: "{{ opa_install_dir }}/opa_{{ opa_version }}_linux_amd64"
+    mode: 0755
+
+- name: install opa - make local bin dir
+  file:
+    path: "/home/{{ username }}/.local/bin"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    state: directory
+    force: yes
+
+- name: install opa - symlink opa to /bin
+  become: true
+  copy:
+    src: "{{ opa_install_dir }}/opa_{{ opa_version }}_linux_amd64"
+    dest: "/home/{{ username }}/.local/bin/opa"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: 0755
+
+- name: install opa - symlink opa to /bin
+  become: true
+  file:
+    src: "/home/{{ username }}/.local/bin/opa"
+    dest: "/bin/opa"
+    state: link
+
+- name: cleanup opa install dirs
+  file:
+    path: "{{ opa_install_dir }}"
+    state: absent
