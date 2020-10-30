@@ -5,6 +5,7 @@
   #- include: aws-cli.yml
   #- include: aws-iam-authenticator.yml
   #- include: blackbox.yml
+  #- include: cert-manager-kubectl-plugin.yml
   #- include: chrome.yml
   #- include: docker.yml
   #- include: fish.yml

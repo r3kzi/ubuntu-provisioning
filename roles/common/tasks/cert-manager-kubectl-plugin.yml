@@ -1,0 +1,37 @@
+---
+- name: install cert-manager kubectl plugin - set version
+  set_fact:
+    cert_manager_version: "1.0.4"
+
+- name: install cert-manager kubectl plugin - set facts
+  set_fact:
+    install_dir:  "/home/{{ username }}/cert-manager-kubectl-plugin-install"
+    download_url: "https://github.com/jetstack/cert-manager/releases/download/v{{ cert_manager_version }}/kubectl-cert_manager-linux-amd64.tar.gz"
+
+- name: install cert-manager kubectl plugin - create install directory
+  file:
+    path: "{{ install_dir }}"
+    state: directory
+    force: yes
+
+- name: install cert-manager kubectl plugin - download
+  get_url:
+    url: "{{ download_url }}"
+    dest: "{{ install_dir }}/kubectl-cert-manager.tar.gz"
+    mode: 0660
+
+- name: install cert-manager kubectl plugin - unarchive
+  unarchive:
+    src: "{{ install_dir }}/kubectl-cert-manager.tar.gz"
+    dest: "{{ install_dir }}"
+
+- name: install cert-manager kubectl plugin - copy binary
+  become: true
+  copy:
+    src: "{{ install_dir }}/kubectl-cert_manager"
+    dest: "/usr/local/bin/kubectl-cert_manager"
+
+- name: install cert-manager kubectl plugin - remove install directory
+  file:
+    path: "{{ install_dir }}"
+    state: absent
