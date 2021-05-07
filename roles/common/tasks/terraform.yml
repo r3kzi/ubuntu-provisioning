@@ -1,11 +1,11 @@
 ---
 - name: install terraform - set terraform version
   set_fact:
-    terraform_version:        "0.14.7"
+    terraform_version:        "0.15.3"
 
 - name: install terraform - set facts for installation
   set_fact:
-    hashicorp_gpg_key_id:     "51852D87348FFC4C"
+    hashicorp_gpg_key_id:     "72D7468F"
     terraform_install_dir:    "/home/{{ username }}/terraform-install"
     terraform_sha256_url:     "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_SHA256SUMS"
     terraform_sha256_sig_url: "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_SHA256SUMS.sig"
