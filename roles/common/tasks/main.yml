@@ -24,6 +24,7 @@
   #- include: pluto.yml
   #- include: rancher-compose.yml
   #- include: spotify.yml
+  #- include: stern.yml
   #- include: terraform.yml
   #- include: terragrunt.yml
   #- include: vagrant.yml

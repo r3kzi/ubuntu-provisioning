@@ -1,0 +1,64 @@
+---
+- name: install stern - set stern version
+  set_fact:
+    stern_version: "1.20.0"
+
+- name: install stern - set facts for installation
+  set_fact:
+    stern_install_dir:  "/home/{{ username }}/stern-install"
+    stern_checksum_url: "https://github.com/stern/stern/releases/download/v{{ stern_version }}/checksums.txt"
+    stern_download_url: "https://github.com/stern/stern/releases/download/v{{ stern_version }}/stern_{{ stern_version }}_linux_amd64.tar.gz"
+
+- name: install stern - create ~/stern-install
+  file:
+    path: "{{ stern_install_dir }}"
+    state: directory
+    force: yes
+
+- name: install stern - download stern checksums
+  become: true
+  get_url:
+    url: "{{ stern_checksum_url }}"
+    dest: "{{ stern_install_dir }}/checksums.txt"
+    mode: 0440
+
+- name: install stern - extract sha256 checksum
+  become: true
+  shell: "cat {{ stern_install_dir }}/checksums.txt | grep -e 'stern_{{ stern_version }}_linux_amd64.tar.gz' | cut -d' ' -f1"
+  register: stern_checksum
+
+- name: install stern - set sha256 checksum fact
+  set_fact:
+    sha256_value: "{{ stern_checksum.stdout }}"
+
+- name: install stern - download stern binary
+  get_url:
+    url: "{{ stern_download_url }}"
+    dest: "{{ stern_install_dir }}/stern_{{ stern_version }}_linux_amd64.tar.gz"
+    checksum: "sha256:{{ sha256_value }}"
+    mode: 0660
+
+- name: install stern - make local bin dir
+  file:
+    path: "/home/{{ username }}/.local/bin"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    state: directory
+    force: yes
+
+- name: install stern - unzip stern archive
+  unarchive:
+    src: "{{ stern_install_dir }}/stern_{{ stern_version }}_linux_amd64.tar.gz"
+    dest: "/home/{{ username }}/.local/bin/"
+
+- name: install stern - symlink stern to /bin
+  become: true
+  file:
+    src: "/home/{{ username }}/.local/bin/stern_{{ stern_version }}_linux_amd64/stern"
+    dest: "/bin/stern"
+    state: link
+
+- name: cleanup stern install dirs
+  file:
+    path: "{{ stern_install_dir }}"
+    state: absent
