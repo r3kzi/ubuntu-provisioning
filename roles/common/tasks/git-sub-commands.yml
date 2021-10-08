@@ -1,0 +1,11 @@
+---
+- name: install git-sub-commands
+  become: true
+  copy:
+    src: "../files/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: a+x
+  with_items:
+    [ "git-main", "git-sync", "git-tmp", "git-tidy" ]
