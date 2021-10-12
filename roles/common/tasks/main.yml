@@ -12,6 +12,7 @@
   #- include: direnv.yml
   #- include: discord.yml
   #- include: git.yml
+  #- include: git-cliff.yml
   #- include: git-sub-commands.yml
   #- include: helm.yml
   #- include: hyper.yml
