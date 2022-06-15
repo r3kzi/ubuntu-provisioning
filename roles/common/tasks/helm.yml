@@ -1,7 +1,7 @@
 ---
 - name: install helm - set helm version
   set_fact:
-    helm_version: "v3.5.4"
+    helm_version: "v3.8.1"
 
 - name: install helm - set facts for installation
   set_fact:

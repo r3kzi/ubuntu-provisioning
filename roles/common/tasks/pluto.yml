@@ -3,12 +3,12 @@
 
 - name: install pluto - set version
   set_fact:
-    pluto_version: "2.0.2"
+    pluto_version: "5.7.0"
 
 - name: install pluto - set facts
   set_fact:
     pluto_install_dir:  "/home/{{ username }}/pluto-install"
-    pluto_checksum_url: "https://github.com/FairwindsOps/pluto/releases/download/v{{ pluto_version }}/pluto_{{ pluto_version }}_checksums.txt"
+    pluto_checksum_url: "https://github.com/FairwindsOps/pluto/releases/download/v{{ pluto_version }}/checksums.txt"
     pluto_download_url: "https://github.com/FairwindsOps/pluto/releases/download/v{{ pluto_version }}/pluto_{{ pluto_version }}_linux_amd64.tar.gz"
 
 - name: install pluto - create ~/pluto-install
