@@ -1,7 +1,7 @@
 ---
 - name: install opa - set opa version
   set_fact:
-    opa_version:  "0.36.0"
+    opa_version:  "0.42.1"
 
 - name: install opa - set facts for installation
   set_fact:
